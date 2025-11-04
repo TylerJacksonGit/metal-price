@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Spot Price Tracker</title>
+    <!-- We are using Tailwind CSS for styling. It's a utility-first CSS framework that lets us style elements directly in the HTML. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Optional: You can customize the default Tailwind theme here if needed
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <!-- Using the Inter font family for a clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* A little extra CSS for the loading spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto max-w-5xl px-4 py-6">
+            <h1 class="text-3xl font-bold text-gray-800">Metal Spot Price Tracker</h1>
+            <p class="mt-1 text-gray-600">Live prices for precious and basic metals (in USD)</p>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto max-w-5xl px-4 py-8">
+
+        <!-- Status Message Area -->
+        <!-- This div will show loading or error messages -->
+        <div id="status-message" class="mb-6 hidden rounded-lg p-4"></div>
+
+        <!-- Precious Metals Section -->
+        <section>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Precious Metals</h2>
+            <!-- 
+              Grid container for the metal cards.
+              It's responsive: 1 column on small screens, 2 on medium, and 4 on large.
+            -->
+            <div id="precious-metals-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- 
+                  Placeholder cards. The JavaScript will update these.
+                  Each card has a 'data-metal' attribute (e.g., data-metal="XAU")
+                  which the script uses to identify which card to update.
+                -->
+                <div data-metal="XAU" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Gold (AU)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <!-- The price will be inserted here -->
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/oz</span>
+                    </div>
+                </div>
+
+                <div data-metal="XAG" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Silver (AG)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/oz</span>
+                    </div>
+                </div>
+
+                <div data-metal="XPT" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Platinum (PT)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/oz</span>
+                    </div>
+                </div>
+                
+                <div data-metal="XPD" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Palladium (PD)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/oz</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Basic Metals Section -->
+        <section class="mt-12">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Basic Metals</h2>
+            <div id="basic-metals-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- More placeholder cards. Note the unit is USD/lb for these -->
+                <div data-metal="XCU" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Copper (CU)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+
+                <div data-metal="ALU" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Aluminum (AL)</h3>
+                    <div class="price-container mt-4 text-3xl font-default text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+
+                <div data-metal="NI" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Nickel (NI)</h3>
+                    <div classs="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+
+                <div data-metal="ZNC" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Zinc (ZN)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+                
+                <div data-metal="TIN" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Tin (TIN)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+
+                <div data-metal="LEAD" class="metal-card bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-900">Lead (PB)</h3>
+                    <div class="price-container mt-4 text-3xl font-bold text-gray-800">
+                        <span class="price-value">--.--</span>
+                        <span class="text-base font-medium text-gray-500">USD/lb</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer with data source attribution -->
+        <footer class="text-center text-gray-500 mt-12 py-4 border-t border-gray-200">
+            <p>Prices provided by <a href="https://metalpriceapi.com/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">metalpriceapi.com</a></p>
+            <p class="text-sm mt-1">Last updated: <span id="last-updated">--:--:--</span></p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- JavaScript Section ---
+
+        // IMPORTANT!
+        // Replace 'YOUR_API_KEY_HERE' with your actual API key from metalpriceapi.com
+        // Go to https://metalpriceapi.com/ to sign up for a free key.
+        const API_KEY = '7ec477dc3dc8c632bf57295968203f33';
+
+        // Define the symbols for the metals we want to track.
+        // These must match the 'currencies' symbols supported by the API.
+        const PRECIOUS_METALS = ['XAU', 'XAG', 'XPT', 'XPD'];
+        //Commented out for free plan, uncomment for paid
+        const BASIC_METALS = [//'XCU', 'ALU', 'NI', 'ZNC', 'TIN', 'LEAD'
+		];
+        const ALL_METALS = [...PRECIOUS_METALS, ...BASIC_METALS];
+
+        // API Endpoint URL
+        // We build the URL with our key and the list of metals we want.
+        const API_URL = `https://api.metalpriceapi.com/v1/latest?api_key=${API_KEY}&base=USD&currencies=${ALL_METALS.join(',')}`;
+
+        // Get references to the HTML elements we'll need to update.
+        const statusMessageEl = document.getElementById('status-message');
+        const lastUpdatedEl = document.getElementById('last-updated');
+
+        /**
+         * Helper function to show a status message (loading, error, success)
+         * @param {string} message - The text to display.
+         * @param {string} type - 'loading', 'error', or 'success'.
+         */
+        function showStatusMessage(message, type = 'loading') {
+            statusMessageEl.textContent = message;
+            statusMessageEl.classList.remove('hidden', 'bg-blue-100', 'text-blue-800', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+
+            if (type === 'loading') {
+                statusMessageEl.classList.add('bg-blue-100', 'text-blue-800');
+            } else if (type === 'error') {
+                statusMessageEl.classList.add('bg-red-100', 'text-red-800');
+            } else if (type === 'success') {
+                statusMessageEl.classList.add('bg-green-100', 'text-green-800');
+            }
+            
+            statusMessageEl.classList.remove('hidden');
+        }
+
+        /**
+         * Updates a single metal card with the new price.
+         * @param {string} metalSymbol - e.g., 'XAU', 'XAG'.
+         * @param {number} price - The spot price.
+         */
+        function updateMetalCard(metalSymbol, price) {
+            // Find the card element using the 'data-metal' attribute we set in the HTML.
+            const card = document.querySelector(`.metal-card[data-metal="${metalSymbol}"]`);
+            if (card) {
+                // Find the price element within the card.
+                const priceEl = card.querySelector('.price-value');
+                if (priceEl) {
+                    // Format the price to 2 decimal places.
+                    priceEl.textContent = price.toFixed(2);
+                }
+            } else {
+                console.warn(`Could not find a card for metal symbol: ${metalSymbol}`);
+            }
+        }
+
+        /**
+         * Main function to fetch metal prices from the API.
+         * We use an 'async' function to work with 'await' for the network request.
+         */
+        async function fetchMetalPrices() {
+            // Show a loading message while we fetch the data.
+            showStatusMessage('Fetching latest prices...', 'loading');
+
+            // Special check: If the API key hasn't been changed, show an error.
+            if (API_KEY === 'YOUR_API_KEY_HERE') {
+                showStatusMessage('Error: Please add your API key to the script section in this file.', 'error');
+                console.error('API key is missing. Please sign up at metalpriceapi.com and add your key to the script.');
+                return; // Stop the function
+            }
+
+            try {
+                // Use the 'fetch' API to make the network request.
+                // 'await' pauses the function until the request is complete.
+                const response = await fetch(API_URL);
+
+                // Check if the response was successful (e.g., HTTP 200 OK).
+                if (!response.ok) {
+                    // If not, throw an error to be caught by the 'catch' block.
+                    throw new Error(`API request failed with status: ${response.status}`);
+                }
+
+                // Parse the JSON data from the response.
+                const data = await response.json();
+
+                // Check if the API itself reported an error.
+                if (data.success === false || data.error) {
+                     throw new Error(`API Error: ${data.error?.info || 'Unknown API error'}`);
+                }
+
+                // --- Success! ---
+                
+                // Hide the loading message.
+                statusMessageEl.classList.add('hidden');
+
+                // Get the rates object from the data.
+                const rates = data.rates;
+
+                // Loop through all the metal symbols we requested.
+                ALL_METALS.forEach(metal => {
+                    if (rates[metal]) {
+                        // The API returns rates as 1 / price.
+                        // So, we calculate the actual price (1 divided by the rate).
+                        const price = 1 / rates[metal];
+                        updateMetalCard(metal, price);
+                    } else {
+                        console.warn(`Data for ${metal} not found in API response.`);
+                    }
+                });
+
+                // Update the 'last updated' timestamp.
+                const now = new Date();
+                lastUpdatedEl.textContent = now.toLocaleTimeString();
+
+            } catch (error) {
+                // If anything went wrong (network error, JSON parsing error, etc.)
+                // it will be caught here.
+                console.error('Failed to fetch metal prices:', error);
+                showStatusMessage(`Error: ${error.message}. Check the console for details.`, 'error');
+            }
+        }
+
+        // --- Run the code ---
+
+        // This function runs when the entire page (HTML, scripts, etc.)
+        // has finished loading.
+        window.addEventListener('load', () => {
+            // Call our main function to fetch prices as soon as the page loads.
+            fetchMetalPrices();
+            
+            // Optional: Set an interval to automatically refresh the prices
+            // every 10 minutes (600,000 milliseconds).
+            // Be mindful of your API plan's monthly request limit!
+            // 100 requests/month is very limited, so refreshing every 10 minutes
+            // will use up your quota very fast.
+            // A daily refresh might be more appropriate for the free plan.
+            // setInterval(fetchMetalPrices, 600000); 
+        });
+
+    </script>
+</body>
+</html>
